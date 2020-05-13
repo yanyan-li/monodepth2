@@ -254,7 +254,12 @@ class Trainer:
         if self.use_pose_net:
             outputs.update(self.predict_poses(inputs, features))
 
+        # predict depth
+        # 这里开始预测深度
         self.generate_images_pred(inputs, outputs)
+
+        # compute loss
+        # 计算LOSS
         losses = self.compute_losses(inputs, outputs)
 
         return outputs, losses
@@ -351,6 +356,7 @@ class Trainer:
                     disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
                 source_scale = 0
 
+            # disp值映射到[min 0.01, max 10]，求深度值
             _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
 
             outputs[("depth", 0, scale)] = depth
@@ -374,6 +380,7 @@ class Trainer:
                     T = transformation_from_parameters(
                         axisangle[:, 0], translation[:, 0] * mean_inv_depth[:, 0], frame_id < 0)
 
+                # 深度图 -> 3D点云, 3D 点云 -> 图像
                 cam_points = self.backproject_depth[source_scale](
                     depth, inputs[("inv_K", source_scale)])
                 pix_coords = self.project_3d[source_scale](
@@ -381,6 +388,8 @@ class Trainer:
 
                 outputs[("sample", frame_id, scale)] = pix_coords
 
+                # outputs上某点(x,y)的三个通道像素值来自于inputs上的(x',y')
+                # 而x'和y'则由outputs(x,y)的最低维[0]和[1]
                 outputs[("color", frame_id, scale)] = F.grid_sample(
                     inputs[("color", frame_id, source_scale)],
                     outputs[("sample", frame_id, scale)],
@@ -410,6 +419,7 @@ class Trainer:
         losses = {}
         total_loss = 0
 
+        # within different scales
         for scale in self.opt.scales:
             loss = 0
             reprojection_losses = []
