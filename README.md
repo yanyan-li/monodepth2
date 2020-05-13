@@ -2,6 +2,13 @@
 
 This is a **learning-by-doing** repo that is implemented with PyTorch for depth prediction based on [Monodapth2](https://github.com/nianticlabs/monodepth2). It follows the main architecture of monodepth2. Thanks for their contributions.
 
+| modified modules | date | note |
+| ---------------- | :--: | ---: |
+|                  |      |      |
+|                  |      |      |
+
+
+
 ## ⚙️ Setup
 
 Assuming a fresh [Anaconda](https://www.anaconda.com/download/) distribution, you can install the dependencies with:
